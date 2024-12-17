@@ -122,3 +122,43 @@ FROM Employee AS e
 INNER JOIN Project AS p ON e.employee_id = p.employee_id
 GROUP BY p.project_id
 ORDER BY p.project_id;
+
+WITH total_users AS (
+    SELECT COUNT(1)
+    FROM Users
+)
+SELECT
+    contest_id,
+    ROUND(COUNT(DISTINCT user_id) / (SELECT * FROM total_users) * 100, 2) AS percentage
+FROM Register
+GROUP BY contest_id
+ORDER BY percentage DESC, contest_id ASC;
+
+SELECT
+    contest_id,
+    ROUND(COUNT(DISTINCT user_id) / (SELECT COUNT(1) FROM Users) * 100, 2) AS percentage
+FROM Register
+GROUP BY contest_id
+ORDER BY percentage DESC, contest_id ASC;
+
+SELECT
+    query_name,
+    ROUND(AVG(rating / position), 2)
+        AS quality,
+    ROUND(SUM(CASE WHEN rating < 3 THEN 1 ELSE 0 END) / COUNT(1) * 100, 2)
+        AS poor_query_percentage
+FROM Queries
+GROUP BY query_name;
+
+SELECT
+    teacher_id,
+    COUNT(DISTINCT subject_id) AS cnt
+FROM Teacher
+GROUP BY teacher_id;
+
+SELECT
+    activity_date AS day,
+    COUNT(DISTINCT user_id) AS active_users
+FROM Activity
+WHERE activity_date BETWEEN '2019-06-28' AND '2019-07-27'
+GROUP BY activity_date;
