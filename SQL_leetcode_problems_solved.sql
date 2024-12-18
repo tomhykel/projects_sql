@@ -162,3 +162,74 @@ SELECT
 FROM Activity
 WHERE activity_date BETWEEN '2019-06-28' AND '2019-07-27'
 GROUP BY activity_date;
+
+SELECT
+    class
+FROM Courses
+GROUP BY class
+HAVING COUNT(class) >= 5;
+
+SELECT
+    user_id,
+    COUNT(follower_id) AS followers_count
+FROM Followers
+GROUP BY user_id
+ORDER BY user_id ASC;
+
+SELECT
+    MAX(num) AS num
+FROM MyNumbers
+WHERE num IN (
+    SELECT
+        num
+    FROM MyNumbers
+    GROUP BY num
+    HAVING COUNT(num) = 1
+);
+
+SELECT
+    MAX(num) AS num
+FROM (
+    SELECT
+        num
+    FROM MyNumbers
+    GROUP BY num
+    HAVING COUNT(num) = 1
+) AS single_numbers;
+
+SELECT
+    e1.reports_to        AS employee_id,
+    (
+    SELECT e2.name
+    FROM Employees AS e2
+    WHERE e2.employee_id = e1.reports_to
+    )                    AS name,
+    COUNT(e1.reports_to) AS reports_count,
+    ROUND(AVG(e1.age))   AS average_age
+FROM Employees AS e1
+WHERE 1 = 1
+    AND e1.reports_to IS NOT NULL
+    AND e1.reports_to > 0
+GROUP BY e1.reports_to
+ORDER BY e1.reports_to;
+
+SELECT
+    employee_id,
+    department_id
+FROM Employee
+WHERE
+    primary_flag = 'Y'
+    OR employee_id IN (
+        SELECT employee_id
+        FROM Employee
+        GROUP BY employee_id
+        HAVING COUNT(primary_flag) = 1
+    );
+
+SELECT
+    *,
+    CASE
+        WHEN x + y > z AND y + z > x AND x + z > y THEN 'Yes'
+        ELSE 'No'
+    END AS triangle
+FROM Triangle;
