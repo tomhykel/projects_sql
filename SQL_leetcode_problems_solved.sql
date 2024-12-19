@@ -233,3 +233,51 @@ SELECT
         ELSE 'No'
     END AS triangle
 FROM Triangle;
+
+SELECT
+    employee_id
+FROM Employees
+WHERE 1 = 1
+    AND salary < 30000
+    AND manager_id NOT IN (
+        SELECT employee_id
+        FROM Employees
+    )
+ORDER BY employee_id;
+
+SELECT
+    user_id,
+    CONCAT(
+        UPPER(SUBSTRING(name, 1, 1)), LOWER(SUBSTRING(name, 2, LENGTH(name)))
+    ) AS name
+FROM Users
+ORDER BY user_id;
+
+SELECT
+    *
+FROM Patients
+WHERE conditions LIKE 'DIAB1%' OR conditions LIKE '% DIAB1%';
+
+DELETE p1
+FROM Person AS p1
+CROSS JOIN Person AS p2
+WHERE 1 = 1
+    AND p1.email = p2.email
+    AND p1.id > p2.id;
+
+DELETE p1
+FROM Person AS p1, Person AS p2
+WHERE 1 = 1
+    AND p1.email = p2.email
+    AND p1.id > p2.id;
+
+WITH first_email AS (
+    SELECT MIN(id) AS id
+    FROM Person
+    GROUP BY email
+)
+DELETE FROM Person
+WHERE id NOT IN (
+    SELECT id
+    FROM first_email
+);
