@@ -281,3 +281,59 @@ WHERE id NOT IN (
     SELECT id
     FROM first_email
 );
+
+SELECT
+    a.name
+    FROM Employee AS a
+JOIN (
+    SELECT
+    managerId,
+    COUNT(id)
+    FROM Employee
+    GROUP BY managerId
+    HAVING COUNT(id) >=5
+    ) AS b
+ON a.id = b.managerId;
+
+SELECT
+    name
+FROM Employee
+WHERE id IN (
+    SELECT
+        managerId
+    FROM Employee
+    GROUP BY managerId
+    HAVING COUNT(*) >= 5
+    );
+
+SELECT
+    s.user_id,
+    CASE
+        WHEN c.user_id IS NULL THEN 0
+        ELSE ROUND(SUM(c.action = 'confirmed') / COUNT(c.user_id), 2)
+    END AS confirmation_rate
+FROM Signups AS s
+LEFT JOIN Confirmations AS c
+ON s.user_id = c.user_id
+GROUP BY s.user_id;
+
+SELECT
+    DATE_FORMAT(trans_date, "%Y-%m") AS month,
+    country,
+    COUNT(1) AS trans_count,
+    SUM(CASE WHEN state = 'approved' THEN 1 ELSE 0 END) AS approved_count,
+    SUM(amount) AS trans_total_amount,
+    SUM(CASE WHEN state = 'approved' THEN amount ELSE 0 END ) AS approved_total_amount
+FROM Transactions
+GROUP BY DATE_FORMAT(trans_date, "%Y-%m"), country;
+
+SELECT
+    ROUND(AVG(order_date = customer_pref_delivery_date) * 100, 2) AS immediate_percentage
+FROM DELIVERY
+WHERE (customer_id, order_date) IN (
+    SELECT
+    customer_id,
+    MIN(order_date) AS first_order_date
+    FROM Delivery
+    GROUP BY customer_id
+);
