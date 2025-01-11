@@ -337,3 +337,84 @@ WHERE (customer_id, order_date) IN (
     FROM Delivery
     GROUP BY customer_id
 );
+
+SELECT
+    -- *
+    ROUND(COUNT(1) / (SELECT COUNT(DISTINCT player_id ) FROM Activity), 2) AS fraction
+FROM Activity
+WHERE (player_id, DATE_SUB(event_date, INTERVAL 1 DAY)) IN (
+    SELECT
+        player_id,
+        MIN(event_date)
+    FROM Activity
+    GROUP BY player_id
+);
+
+SELECT
+    product_id,
+    year AS first_year,
+    quantity,
+    price
+FROM Sales
+WHERE (product_id, year) IN (
+    SELECT
+        product_id,
+        MIN(year)
+    FROM Sales
+    GROUP BY product_id
+);
+
+SELECT
+    customer_id
+FROM Customer
+GROUP BY customer_id
+HAVING COUNT(DISTINCT(product_key)) = (
+    SELECT
+        COUNT(DISTINCT product_key)
+    FROM Product
+);
+
+SELECT
+    customer_id
+FROM Customer
+GROUP BY customer_id
+HAVING COUNT(DISTINCT(product_key)) = (
+    SELECT
+        COUNT(DISTINCT product_key)
+    FROM Product
+);
+
+SELECT
+    DISTINCT t1.num AS ConsecutiveNums
+FROM Logs AS t1
+INNER JOIN Logs AS t2 ON t1.id = t2.id + 1
+INNER JOIN Logs AS t3 ON t2.id = t3.id + 1
+WHERE 1 = 1
+    AND t1.num = t2.num
+    AND t2.num = t3.num;
+
+SELECT
+    product_id,
+    new_price as price
+FROM Products
+WHERE (product_id, change_date) IN (
+    SELECT
+        product_id,
+        MAX(change_date)
+    FROM Products
+    WHERE change_date <= '2019-08-16'
+    GROUP BY product_id
+)
+UNION
+SELECT
+    product_id,
+    10 AS price
+FROM Products
+WHERE (product_id, change_date) IN (
+    SELECT
+        product_id,
+        MIN(change_date)
+    FROM Products
+    GROUP BY product_id
+    HAVING MIN(change_date) > '2019-08-16'
+);
