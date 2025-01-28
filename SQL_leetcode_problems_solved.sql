@@ -418,3 +418,139 @@ WHERE (product_id, change_date) IN (
     GROUP BY product_id
     HAVING MIN(change_date) > '2019-08-16'
 );
+
+WITH max_id AS (
+    SELECT MAX(id)
+    FROM SEAT
+)
+SELECT
+    CASE
+        WHEN id % 2  = 0 THEN id - 1
+        WHEN id = (SELECT * FROM max_id) AND id % 2 != 0 then id
+        WHEN id % 2 != 0 THEN id + 1
+    END AS id,
+    student
+FROM Seat
+ORDER BY id ASC;
+
+SELECT
+    CASE
+        WHEN id % 2  = 0 THEN id - 1
+        WHEN id = (SELECT MAX(id) FROM Seat) AND id % 2 != 0 then id
+        WHEN id % 2 != 0 THEN id + 1
+    END AS id,
+    student
+FROM Seat
+ORDER BY id ASC;
+
+WITH cde_all_ids AS (
+    SELECT
+        requester_id AS id
+    FROM RequestAccepted
+    UNION ALL
+    SELECT
+        accepter_id AS id
+    FROM RequestAccepted
+)
+SELECT
+    id,
+    COUNT(id) AS num
+FROM cde_all_ids
+GROUP BY id
+ORDER BY num DESC
+LIMIT 1;
+
+SELECT
+    sell_date,
+    COUNT(DISTINCT product) AS num_sold,
+    GROUP_CONCAT(DISTINCT product ORDER BY product ASC) AS products
+FROM Activities
+GROUP BY sell_date
+ORDER BY sell_date ASC;
+
+SELECT
+    p.product_name,
+    SUM(o.unit) AS unit
+FROM Orders AS o
+INNER JOIN Products AS p ON o.product_id = p.product_id
+WHERE YEAR(o.order_date) = 2020 AND MONTH(o.order_date) = 02
+GROUP BY p.product_name
+HAVING SUM(o.unit) >= 100;
+
+SELECT
+    *
+FROM Users
+WHERE mail REGEXP '^[A-Za-z][a-zA-Z0-9_.-]*@leetcode[.]com$';
+
+SELECT
+    MAX(salary) AS SecondHighestSalary
+FROM Employee
+WHERE salary < (
+    SELECT
+        MAX(salary)
+    FROM Employee
+);
+
+WITH cte_total_weight AS (
+SELECT
+    person_name,
+    weight,
+    turn,
+    SUM(weight) OVER(ORDER BY turn) AS total_weight
+FROM Queue
+)
+SELECT
+    person_name
+FROM cte_total_weight
+WHERE total_weight <= 1000
+ORDER BY total_weight DESC
+LIMIT 1;
+
+WITH
+cte_low AS (
+    SELECT *
+    FROM Accounts
+    WHERE income < 20000
+),
+cte_average AS (
+    SELECT *
+    FROM Accounts
+    WHERE income >= 20000 AND income <= 50000
+),
+cte_high AS (
+    SELECT *
+    FROM Accounts
+    WHERE income > 50000
+)
+SELECT
+    'Low Salary' AS category,
+    COUNT(1) AS accounts_count
+FROM cte_low
+UNION
+SELECT
+    'Average Salary' AS category,
+    COUNT(1) AS accounts_count
+FROM cte_average
+UNION
+SELECT
+    'High Salary' AS category,
+    COUNT(1) AS accounts_count
+FROM cte_high;
+
+    SELECT
+        'Low Salary' AS category,
+        COUNT(1) AS accounts_count
+    FROM Accounts
+    WHERE income < 20000
+UNION
+    SELECT
+        'Average Salary' AS category,
+        COUNT(1) AS accounts_count
+    FROM Accounts
+    WHERE income >= 20000 AND income <= 50000
+UNION
+    SELECT
+        'High Salary' AS category,
+        COUNT(1) AS accounts_count
+    FROM Accounts
+    WHERE income > 50000;
