@@ -554,3 +554,70 @@ UNION
         COUNT(1) AS accounts_count
     FROM Accounts
     WHERE income > 50000;
+
+    (SELECT
+        u.name AS results
+    FROM MovieRating AS r
+    INNER JOIN Users AS u ON r.user_id = u.user_id
+    GROUP BY r.user_id
+    ORDER BY COUNT(r.rating) DESC, u.name ASC
+    LIMIT 1)
+UNION ALL
+    (SELECT
+        m.title AS results
+    FROM MovieRating AS r
+    INNER JOIN Movies AS m ON r.movie_id = m.movie_id
+    WHERE YEAR(r.created_at) = 2020 AND MONTH(r.created_at) = 2
+    GROUP BY m.title
+    ORDER BY AVG(r.rating) DESC, m.title ASC
+    LIMIT 1);
+
+WITH cte_daily_amount AS (
+    SELECT
+        visited_on,
+        SUM(amount) AS daily_amount
+    FROM Customer
+    GROUP BY visited_on
+)
+SELECT
+    visited_on,
+    SUM(daily_amount)
+        OVER(ORDER BY visited_on ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS amount,
+    ROUND(AVG(daily_amount)
+        OVER(ORDER BY visited_on ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 2) AS average_amount
+FROM cte_daily_amount
+LIMIT 99999
+OFFSET 6;
+
+SELECT ROUND(SUM(tiv_2016), 2) AS tiv_2016
+FROM Insurance
+WHERE
+    1 = 1
+    AND tiv_2015 IN (
+        SELECT tiv_2015
+        FROM Insurance
+        GROUP BY tiv_2015
+        HAVING COUNT(1) > 1
+    )
+    AND (lat, lon) IN (
+        SELECT lat, lon
+        FROM Insurance
+        GROUP BY lat, lon
+        HAVING COUNT(*) = 1
+    );
+
+WITH cte_top_salaries AS (
+    SELECT
+        e.name AS Employee,
+        e.salary AS Salary,
+        d.name AS Department,
+        DENSE_RANK() OVER(PARTITION BY d.id ORDER BY salary DESC) AS top_salary
+    FROM Employee AS e
+    INNER JOIN Department AS d ON e.departmentId = d.id
+)
+SELECT
+    Department,
+    Employee,
+    Salary
+FROM cte_top_salaries
+WHERE top_salary < 4;
